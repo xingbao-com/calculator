@@ -1,0 +1,815 @@
+calculator
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多功能计算器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #f0f0f0;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        header {
+            background: rgba(10, 15, 30, 0.95);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 2px solid #00a8ff;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00a8ff, #00ffea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 168, 255, 0.3);
+        }
+        
+        .subtitle {
+            color: #a0aec0;
+            font-size: 1.1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 18px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            color: #a0aec0;
+        }
+        
+        .tab.active {
+            color: #00a8ff;
+            border-bottom: 3px solid #00a8ff;
+            background: rgba(0, 168, 255, 0.1);
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(0, 168, 255, 0.05);
+            color: #e2e8f0;
+        }
+        
+        .tab-content {
+            padding: 30px;
+            min-height: 450px;
+        }
+        
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 基本计算器样式 */
+        .calculator {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .calc-display {
+            grid-column: span 4;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: right;
+            font-size: 2.2rem;
+            height: 90px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            color: #f8fafc;
+        }
+        
+        .calc-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border: none;
+            border-radius: 10px;
+            padding: 18px 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calc-btn:hover {
+            background: rgba(56, 72, 99, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .calc-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .operator {
+            background: rgba(0, 168, 255, 0.2);
+            color: #00a8ff;
+        }
+        
+        .equals {
+            background: linear-gradient(135deg, #00a8ff, #00ffea);
+            color: #0f1a2a;
+            grid-column: span 2;
+        }
+        
+        .clear {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        /* 科学计算器样式 */
+        .scientific-btns {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        
+        .sci-btn {
+            background: rgba(51, 65, 85, 0.8);
+            color: #94a3b8;
+        }
+        
+        /* 笔记样式 */
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .notes-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .notes-input {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            color: #f8fafc;
+            font-size: 1.1rem;
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .notes-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .notes-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(0, 168, 255, 0.2);
+            color: #00a8ff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .notes-btn:hover {
+            background: rgba(0, 168, 255, 0.3);
+        }
+        
+        .notes-list {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .note-item {
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00a8ff;
+        }
+        
+        .note-date {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        
+        /* 单位转换样式 */
+        .converter {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .conversion-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .conversion-input {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 1.2rem;
+            color: #f8fafc;
+        }
+        
+        .conversion-select {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            color: #f8fafc;
+            font-size: 1rem;
+            width: 150px;
+        }
+        
+        .conversion-type {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .conv-btn {
+            padding: 12px 25px;
+            background: rgba(0, 168, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: #00a8ff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .conv-btn.active {
+            background: rgba(0, 168, 255, 0.5);
+            color: white;
+        }
+        
+        .swap-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #00a8ff;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .swap-btn:hover {
+            transform: rotate(180deg);
+            background: rgba(56, 72, 99, 0.8);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .calculator, .scientific-btns {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1 0 50%;
+                padding: 15px 0;
+                font-size: 1rem;
+            }
+            
+            .conversion-group {
+                flex-direction: column;
+            }
+            
+            .conversion-select {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tab {
+                flex: 1 0 100%;
+            }
+            
+            .calc-btn {
+                padding: 15px 5px;
+                font-size: 1.1rem;
+            }
+            
+            .calc-display {
+                font-size: 1.8rem;
+                height: 70px;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            border-top: 1px solid #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> 多功能计算器</h1>
+            <p class="subtitle">基本计算 | 科学计算 | 数学笔记 | 单位转换</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="basic">基本计算器</div>
+            <div class="tab" data-tab="scientific">科学计算器</div>
+            <div class="tab" data-tab="notes">数学笔记</div>
+            <div class="tab" data-tab="converter">单位转换</div>
+        </div>
+        
+        <div class="tab-content">
+            <!-- 基本计算器 -->
+            <div class="content-section active" id="basic">
+                <div class="calculator">
+                    <div class="calc-display" id="display">0</div>
+                    <button class="calc-btn clear" onclick="clearDisplay()">AC</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay('(')">(</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay(')')">)</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay('/')">÷</button>
+                    
+                    <button class="calc-btn" onclick="appendToDisplay('7')">7</button>
+                    <button class="calc-btn" onclick="appendToDisplay('8')">8</button>
+                    <button class="calc-btn" onclick="appendToDisplay('9')">9</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay('*')">×</button>
+                    
+                    <button class="calc-btn" onclick="appendToDisplay('4')">4</button>
+                    <button class="calc-btn" onclick="appendToDisplay('5')">5</button>
+                    <button class="calc-btn" onclick="appendToDisplay('6')">6</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay('-')">−</button>
+                    
+                    <button class="calc-btn" onclick="appendToDisplay('1')">1</button>
+                    <button class="calc-btn" onclick="appendToDisplay('2')">2</button>
+                    <button class="calc-btn" onclick="appendToDisplay('3')">3</button>
+                    <button class="calc-btn operator" onclick="appendToDisplay('+')">+</button>
+                    
+                    <button class="calc-btn" onclick="appendToDisplay('0')">0</button>
+                    <button class="calc-btn" onclick="appendToDisplay('.')">.</button>
+                    <button class="calc-btn" onclick="backspace()"><i class="fas fa-backspace"></i></button>
+                    <button class="calc-btn equals" onclick="calculate()">=</button>
+                </div>
+            </div>
+            
+            <!-- 科学计算器 -->
+            <div class="content-section" id="scientific">
+                <div class="calculator">
+                    <div class="calc-display" id="sci-display">0</div>
+                    <button class="calc-btn clear" onclick="clearSciDisplay()">AC</button>
+                    <button class="calc-btn operator" onclick="sciOperation('(')">(</button>
+                    <button class="calc-btn operator" onclick="sciOperation(')')">)</button>
+                    <button class="calc-btn operator" onclick="sciOperation('/')">÷</button>
+                    
+                    <button class="calc-btn" onclick="sciOperation('7')">7</button>
+                    <button class="calc-btn" onclick="sciOperation('8')">8</button>
+                    <button class="calc-btn" onclick="sciOperation('9')">9</button>
+                    <button class="calc-btn operator" onclick="sciOperation('*')">×</button>
+                    
+                    <button class="calc-btn" onclick="sciOperation('4')">4</button>
+                    <button class="calc-btn" onclick="sciOperation('5')">5</button>
+                    <button class="calc-btn" onclick="sciOperation('6')">6</button>
+                    <button class="calc-btn operator" onclick="sciOperation('-')">−</button>
+                    
+                    <button class="calc-btn" onclick="sciOperation('1')">1</button>
+                    <button class="calc-btn" onclick="sciOperation('2')">2</button>
+                    <button class="calc-btn" onclick="sciOperation('3')">3</button>
+                    <button class="calc-btn operator" onclick="sciOperation('+')">+</button>
+                    
+                    <button class="calc-btn" onclick="sciOperation('0')">0</button>
+                    <button class="calc-btn" onclick="sciOperation('.')">.</button>
+                    <button class="calc-btn" onclick="sciBackspace()"><i class="fas fa-backspace"></i></button>
+                    <button class="calc-btn equals" onclick="sciCalculate()">=</button>
+                </div>
+                
+                <div class="scientific-btns">
+                    <button class="calc-btn sci-btn" onclick="sciFunction('sin')">sin</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('cos')">cos</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('tan')">tan</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('log')">log</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('ln')">ln</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('^')">x^y</button>
+                    
+                    <button class="calc-btn sci-btn" onclick="sciFunction('asin')">sin⁻¹</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('acos')">cos⁻¹</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('atan')">tan⁻¹</button>
+                    <button class="calc-btn sci-btn" onclick="sciFunction('sqrt')">√</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('!')">n!</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('%')">%</button>
+                    
+                    <button class="calc-btn sci-btn" onclick="sciConstant('π')">π</button>
+                    <button class="calc-btn sci-btn" onclick="sciConstant('e')">e</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('(')">(</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation(')')">)</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('**2')">x²</button>
+                    <button class="calc-btn sci-btn" onclick="sciOperation('**3')">x³</button>
+                </div>
+            </div>
+            
+            <!-- 数学笔记 -->
+            <div class="content-section" id="notes">
+                <div class="notes-container">
+                    <div class="notes-editor">
+                        <textarea class="notes-input" id="note-input" placeholder="输入数学笔记、公式或想法..."></textarea>
+                        <div class="notes-actions">
+                            <button class="notes-btn" onclick="saveNote()"><i class="fas fa-save"></i> 保存笔记</button>
+                            <button class="notes-btn" onclick="clearNote()"><i class="fas fa-trash"></i> 清空</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-list">
+                        <h3><i class="fas fa-history"></i> 保存的笔记</h3>
+                        <div id="saved-notes">
+                            <div class="note-item">
+                                <div class="note-date">2023年10月15日</div>
+                                <div>勾股定理：a² + b² = c²</div>
+                            </div>
+                            <div class="note-item">
+                                <div class="note-date">2023年10月10日</div>
+                                <div>二次方程求根公式：x = [-b ± √(b² - 4ac)] / (2a)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 单位转换 -->
+            <div class="content-section" id="converter">
+                <div class="converter">
+                    <div class="conversion-type">
+                        <button class="conv-btn active" data-type="length">长度</button>
+                        <button class="conv-btn" data-type="weight">重量</button>
+                        <button class="conv-btn" data-type="temperature">温度</button>
+                        <button class="conv-btn" data-type="area">面积</button>
+                    </div>
+                    
+                    <div class="conversion-group">
+                        <input type="number" class="conversion-input" id="input-value" value="1" oninput="convertUnits()">
+                        <select class="conversion-select" id="input-unit" onchange="convertUnits()">
+                            <option value="m">米 (m)</option>
+                            <option value="km">千米 (km)</option>
+                            <option value="cm">厘米 (cm)</option>
+                            <option value="mm">毫米 (mm)</option>
+                            <option value="in">英寸 (in)</option>
+                            <option value="ft">英尺 (ft)</option>
+                            <option value="yd">码 (yd)</option>
+                            <option value="mi">英里 (mi)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="swap-btn" onclick="swapUnits()">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    
+                    <div class="conversion-group">
+                        <input type="number" class="conversion-input" id="output-value" readonly>
+                        <select class="conversion-select" id="output-unit" onchange="convertUnits()">
+                            <option value="cm">厘米 (cm)</option>
+                            <option value="m" selected>米 (m)</option>
+                            <option value="km">千米 (km)</option>
+                            <option value="mm">毫米 (mm)</option>
+                            <option value="in">英寸 (in)</option>
+                            <option value="ft">英尺 (ft)</option>
+                            <option value="yd">码 (yd)</option>
+                            <option value="mi">英里 (mi)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 多功能计算器 | 设计开发</p>
+        </footer>
+    </div>
+
+    <script>
+        // 选项卡切换功能
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('.content-section');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动状态
+                tabs.forEach(t => t.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                
+                // 添加当前活动状态
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 单位转换类型切换
+        const convBtns = document.querySelectorAll('.conv-btn');
+        convBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                convBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // 实际应用中这里会更新单位选项
+                convertUnits();
+            });
+        });
+        
+        // 基本计算器功能
+        let display = document.getElementById('display');
+        
+        function appendToDisplay(value) {
+            if (display.textContent === '0' && value !== '.') {
+                display.textContent = value;
+            } else {
+                display.textContent += value;
+            }
+        }
+        
+        function clearDisplay() {
+            display.textContent = '0';
+        }
+        
+        function backspace() {
+            if (display.textContent.length === 1 || 
+                (display.textContent.length === 2 && display.textContent.startsWith('-'))) {
+                display.textContent = '0';
+            } else {
+                display.textContent = display.textContent.slice(0, -1);
+            }
+        }
+        
+        function calculate() {
+            try {
+                let expression = display.textContent
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/');
+                
+                // 处理百分比
+                expression = expression.replace(/(\d+)%/g, (match, p1) => {
+                    return parseFloat(p1) / 100;
+                });
+                
+                display.textContent = eval(expression);
+            } catch (error) {
+                display.textContent = '错误';
+            }
+        }
+        
+        // 科学计算器功能
+        let sciDisplay = document.getElementById('sci-display');
+        
+        function sciOperation(value) {
+            if (sciDisplay.textContent === '0' && value !== '.') {
+                sciDisplay.textContent = value;
+            } else {
+                sciDisplay.textContent += value;
+            }
+        }
+        
+        function sciFunction(func) {
+            let value = parseFloat(sciDisplay.textContent);
+            let result;
+            
+            switch(func) {
+                case 'sin':
+                    result = Math.sin(value * Math.PI / 180);
+                    break;
+                case 'cos':
+                    result = Math.cos(value * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = Math.tan(value * Math.PI / 180);
+                    break;
+                case 'asin':
+                    result = Math.asin(value) * 180 / Math.PI;
+                    break;
+                case 'acos':
+                    result = Math.acos(value) * 180 / Math.PI;
+                    break;
+                case 'atan':
+                    result = Math.atan(value) * 180 / Math.PI;
+                    break;
+                case 'log':
+                    result = Math.log10(value);
+                    break;
+                case 'ln':
+                    result = Math.log(value);
+                    break;
+                case 'sqrt':
+                    result = Math.sqrt(value);
+                    break;
+            }
+            
+            sciDisplay.textContent = result.toFixed(8);
+        }
+        
+        function sciConstant(constant) {
+            if (constant === 'π') {
+                sciDisplay.textContent = Math.PI;
+            } else if (constant === 'e') {
+                sciDisplay.textContent = Math.E;
+            }
+        }
+        
+        function sciCalculate() {
+            try {
+                let expression = sciDisplay.textContent
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/(\d+)!/g, (match, p1) => {
+                        let num = parseInt(p1);
+                        let fact = 1;
+                        for(let i = 1; i <= num; i++) {
+                            fact *= i;
+                        }
+                        return fact;
+                    });
+                
+                // 处理百分比
+                expression = expression.replace(/(\d+)%/g, (match, p1) => {
+                    return parseFloat(p1) / 100;
+                });
+                
+                sciDisplay.textContent = eval(expression);
+            } catch (error) {
+                sciDisplay.textContent = '错误';
+            }
+        }
+        
+        function clearSciDisplay() {
+            sciDisplay.textContent = '0';
+        }
+        
+        function sciBackspace() {
+            if (sciDisplay.textContent.length === 1 || 
+                (sciDisplay.textContent.length === 2 && sciDisplay.textContent.startsWith('-'))) {
+                sciDisplay.textContent = '0';
+            } else {
+                sciDisplay.textContent = sciDisplay.textContent.slice(0, -1);
+            }
+        }
+        
+        // 单位转换功能
+        const lengthFactors = {
+            'm': 1,
+            'km': 1000,
+            'cm': 0.01,
+            'mm': 0.001,
+            'in': 0.0254,
+            'ft': 0.3048,
+            'yd': 0.9144,
+            'mi': 1609.344
+        };
+        
+        const weightFactors = {
+            'kg': 1,
+            'g': 0.001,
+            'mg': 0.000001,
+            'lb': 0.453592,
+            'oz': 0.0283495
+        };
+        
+        function convertUnits() {
+            const inputValue = parseFloat(document.getElementById('input-value').value) || 0;
+            const inputUnit = document.getElementById('input-unit').value;
+            const outputUnit = document.getElementById('output-unit').value;
+            
+            // 获取当前转换类型
+            const currentType = document.querySelector('.conv-btn.active').getAttribute('data-type');
+            
+            let result;
+            
+            if (currentType === 'length') {
+                result = inputValue * (lengthFactors[inputUnit] / lengthFactors[outputUnit]);
+            } else if (currentType === 'weight') {
+                result = inputValue * (weightFactors[inputUnit] / weightFactors[outputUnit]);
+            } else if (currentType === 'temperature') {
+                if (inputUnit === 'c' && outputUnit === 'f') {
+                    result = (inputValue * 9/5) + 32;
+                } else if (inputUnit === 'f' && outputUnit === 'c') {
+                    result = (inputValue - 32) * 5/9;
+                } else {
+                    result = inputValue; // 相同单位或未知
+                }
+            } else {
+                // 面积转换 (简化为长度平方)
+                result = inputValue * 
+                    (lengthFactors[inputUnit] / lengthFactors[outputUnit]) *
+                    (lengthFactors[inputUnit] / lengthFactors[outputUnit]);
+            }
+            
+            document.getElementById('output-value').value = result.toFixed(6);
+        }
+        
+        function swapUnits() {
+            const inputUnit = document.getElementById('input-unit');
+            const outputUnit = document.getElementById('output-unit');
+            
+            const tempUnit = inputUnit.value;
+            inputUnit.value = outputUnit.value;
+            outputUnit.value = tempUnit;
+            
+            convertUnits();
+        }
+        
+        // 笔记功能
+        function saveNote() {
+            const noteInput = document.getElementById('note-input');
+            const noteText = noteInput.value.trim();
+            
+            if (noteText) {
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+                
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerHTML = `
+                    <div class="note-date">${dateStr}</div>
+                    <div>${noteText}</div>
+                `;
+                
+                document.getElementById('saved-notes').prepend(noteItem);
+                noteInput.value = '';
+                
+                // 实际应用中这里会保存到localStorage
+            }
+        }
+        
+        function clearNote() {
+            document.getElementById('note-input').value = '';
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            convertUnits();
+        });
+    </script>
+</body>
+</html>
